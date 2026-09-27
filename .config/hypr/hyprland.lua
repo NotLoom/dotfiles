@@ -78,6 +78,28 @@ hl.window_rule({
 	float = true,
 })
 hl.window_rule({ match = { class = "^(zoom)$" }, float = true })
+
+-- blkcat's overlay is a transparent X11 window the size of the game window (class
+-- "blkcat", set by src/features/overlay.cpp). Hyprland's blur is on by default
+-- (decoration:blur:enabled = true, ignore_opacity = true), so it replaces the
+-- game behind that whole rectangle with a blurred copy: the overlay makes the
+-- game look blurred. Exclude the overlay from blur, plus the shadow and
+-- open/close animation, which a full-screen dock-type window has no use for.
+--
+-- no_focus / no_initial_focus matter too: the overlay is click-through (empty
+-- input shape), so Hyprland never moves focus *off* it once it has it - and then
+-- a window-targeted bind such as fullscreen hits the overlay instead of CS2.
+-- Hyprland fullscreens the overlay, marks the game invisible (hyprctl clients:
+-- cs2 vis=false) and the game "disappears" until you unfullscreen.
+hl.window_rule({
+	match = { class = "^blkcat$" },
+	no_blur = true,
+	no_shadow = true,
+	no_anim = true,
+	no_focus = true,
+	no_initial_focus = true,
+})
+
 hl.layer_rule({ match = { namespace = "^(quickshell)$" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^dms:.*" }, no_anim = true })
 
