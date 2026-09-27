@@ -15,14 +15,18 @@ source /usr/share/nvm/init-nvm.sh
 # $HOME (work tree), so nothing is copied or symlinked. See ~/.dotfiles/README.md
 dotfiles() { command git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 
-# Stage changes to already-tracked dotfiles and commit them.
+# Commit changes to already-tracked dotfiles and push the backup to the remote.
 dotfiles-save() {
 	local msg="${1:-update $(date '+%Y-%m-%d %H:%M')}"
 	if dotfiles diff --quiet --cached && dotfiles diff --quiet; then
-		echo "dotfiles: nothing to save"
-		return 0
+		echo "dotfiles: nothing to commit"
+	else
+		dotfiles add --update &&
+			dotfiles commit --quiet --message "dotfiles: $msg" &&
+			echo "dotfiles: committed ($msg)"
 	fi
-	dotfiles add --update &&
-		dotfiles commit --quiet --message "dotfiles: $msg" &&
-		echo "dotfiles: saved ($msg)"
+	if dotfiles remote get-url origin >/dev/null 2>&1; then
+		dotfiles push --quiet origin main &&
+			echo "dotfiles: synced with $(dotfiles remote get-url origin)"
+	fi
 }
